@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Reaktionstest Auswahl</title>
+    <style>
+
+#fragebogen-form {
+    margin: 100px auto 0 auto;
+  width: 100%;
+  max-width: max-content;
+  color: white;
+}
+
+#stimulus {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    box-sizing: border-box;
+    background-color: rgba(255, 255, 255, 0); /* Startfarbe ist transparent */
+    opacity: 0; /* Startet unsichtbar */
+    transition: opacity 3s linear, background-color 3s linear;
+}
+
+
+
+
+    /* Der Zurück-Button oben rechts */
+    .back-btn {
+        position: absolute;  /* Positioniert den Button absolut */
+        top: 20px;           /* 20px Abstand vom oberen Rand */
+        right: 20px;         /* 20px Abstand vom rechten Rand */
+        padding: 10px 20px;
+        font-size: 1rem;
+        background: none;
+        color: white;
+        border: 1px solid purple;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+
+    
+
+
+
+
+        /* Zentriere alle Titel */
+        h1, h2, h3 {
+            text-align: center;
+            color: rgb(199, 199, 199);
+        }
+        
+        
+        /*
+         * Grundlegende Styles für das Layout und die Buttons
+         */
+        body { margin: 0; padding: 0; background-color: #070707; font-family: sans-serif; overflow: hidden; }
+        .menu, 
+        .test-section { display: none; }
+        .active {display: block !important; }
+        .button-group { 
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+            margin-top: 40px; }
+
+        button { padding: 15px 30px; font-size: 1.2rem; border: 1px solid purple; border-radius: 25px; background: none; color: white; cursor: pointer; transition: background 0.2s; }
+        button:hover { background: purple; }
+        #stimulus, #stimulus2 { position: absolute; }
+        #stimulus, #stimulus2 { display: none; }
+        #stimulus {
+            width: 50px;
+            height: 50px;
+            box-sizing: border-box;
+            background-color: rgb(255, 255, 255);
+            transition: background-color 3s linear;
+        }
+        #results p, #results2 p { margin: 5px 0; }
+        .back-btn {  background: none; }
+        @media (max-width: 600px) {
+            .button-group { flex-direction: column; gap: 15px; }
+        }
+        .button-group button {
+            width: 400px;
+            max-width: 90vw;
+        }
+        #results, #results2, #food-results {
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <script>
+    // Beim Laden der Seite: Nur Fragebogen anzeigen, Menü ausblenden
+    window.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('menu').classList.remove('active');
+        document.getElementById('frage-section').classList.add('active');
+        updateMenuProgress();
+    });
+    </script>
+    <!-- ===================== -->
+    <!--      HAUPTMENÜ        -->
+    <!-- ===================== -->
+    <div class="menu active" id="menu">
+        <h1>Wähle einen Test</h1>
+        <!-- Progress Bar Bereich -->
+        <div id="progress-container" style="width: 90%; max-width: 500px; margin: 0 auto 20px auto;">
+            <div style="display: flex; justify-content: space-between; color: #ccc; font-size: 0.95em;">
+                <span>Fortschritt</span>
+                <span id="progress-label">0/3 Tests abgeschlossen</span>
+            </div>
+            <div style="background: #222; border-radius: 10px; height: 18px; margin-top: 4px; overflow: hidden;">
+                <div id="progress-bar" style="height: 100%; width: 0%; background: linear-gradient(90deg, purple, #ff7f50); transition: width 0.5s;"></div>
+            </div>
+        </div>
+        <!-- Immer sichtbarer Hinweistext -->
+        <div style="text-align:center; color: #aaa; font-size: 1.05em; margin-bottom: 10px;">
+            Sobald alle Tests abgeschlossen sind, kannst du hier im Menü deine Ergebnisse herunterladen.
+        </div>
+        <!-- Nachricht/Download-Button -->
+        <div id="menu-message" style="text-align:center; color: #aaffaa; font-weight: bold; margin: 18px 0 0 0; display: none;"></div>
+        <div class="button-group">
+            <button onclick="showTest('reaktion')">Reaktionstest</button>
+            <button onclick="showTest('entscheidung')">Formtest</button>
+            <button onclick="showTest('food')">Speisentest</button>
+        </div>
+    </div>
+
+    <!-- ===================== -->
+    <!--      FRAGEBOGEN      -->
+    <!-- ===================== -->
+    <div class="test-section" id="frage-section">
+        <h1 id="fragebogen-title">Bitte beantworte die folgenden Fragen</h1>
+        <form id="fragebogen-form">
+            
+            <!-- Frage über das Alter -->
+            <label for="alter">Wie alt bist du?</label><br><br>
+            <input type="text" id="alter" name="alle" placeholder="z. B. 24" style="width: 250px; height: 25px; background: #070707; border: 1px solid purple; color:  white"><br><br>
+           
+            <!-- Frage über das Geschlecht --> 
+            <label for="geschlecht">Welches Geschlecht hast du?</label><br><br>
+            <input type="radio" name="geschlecht" id="geschlecht" value="männlich">Männlich
+            <input type="radio" name="geschlecht" id="geschlecht" value="weiblich">Weiblich<br><br>
+
+            <!-- Frage über die internationale Küche -->    
+            <label for="Küche">Isst du oft internationale Küche?</label><br><br>
+            <input type="radio" name="Küche" id="Küche" value="ja">Ja
+            <input type="radio" name="Küche" id="Küche" value="nein">Nein<br><br>
+
+            <!-- Hast du Allergien die dich daran hindert eine bestimmte internationale Küche zu probieren-->
+            <label>Hast du Allergien, die dich daran hindern, eine bestimmte internationale Küche zu probieren?</label><br><br>
+            <input type="radio" name="Allergien" id="allergie-ja" value="ja">
+            <label for="allergie-ja">Ja</label>
+            <input type="text" name="Allergie" id="A" placeholder="z. B. Gluttenallergie" style="color: white; width: 250px;height: 25px; background-color:#070707; border: 1px solid purple">
+            &nbsp;
+            <input type="radio" name="Allergien" id="allergie-nein" value="nein">
+            <label for="allergie-nein">Nein</label>
+            <br><br>
+
+            <!--Spielst du Videospiele-->
+            <label for="Videospiele" >Wie viele Stunden in der Woche spielst du Videospiele?</label><br><br>
+            <input type="radio" name="Videospiele" id="Videospiele"  value="ja">
+            <label for="Videospiele-ja" style="color: white;">Ja</label>
+            <input type="text" name="Videospiele" id="Videospiele" placeholder="z. B. 15" style="color: white; width: 250px;height: 25px; background-color:#070707; border: 1px solid purple">
+            &nbsp;
+
+            <input type="radio" name="Videospiele" id="Videospiele" value="nein">Nein <br> <br>
+
+            <!-- Neue Frage: Sportarten -->
+            <label for="sportarten">Welche Sportarten übst du aus?</label><br><br>
+            <input type="text" id="sportarten" name="sportarten" placeholder="z.B. Fußball, Schwimmen" style="color:white;width: 250px; height: 25px; background: #070707; border: 1px solid purple;"><br><br>
+
+            <!-- Fehlermeldung für unvollständige Antworten -->
+            <div id="fragebogen-error" style="color: red; display: none; margin-bottom: 10px;"></div>
+            <button type="submit" id="fragebogen-submit">Weiter zum Speise-Entscheidungstest</button>
+        </form>
+    </div>
+
+    <!-- ===================== -->
+    <!--    REAKTIONSTEST     -->
+    <!-- ===================== -->
+    <div class="test-section" id="reaktion-section">
+        <h1 id="title">Reaktionstest</h1>
+        <h2 id="instruction">Sobald ein rotes Rechteck irgendwo auf dem Bildschirm erscheint, drücke so schnell wie möglich die Leertaste.<br>Drücke die Leertaste nur, wenn du das Rechteck wirklich siehst!<br>Mit der Taste 'a' kannst du den Test jederzeit abbrechen.</h2>
+        <h3 id="hint">Drücke die Leertaste, um zu starten.</h3>
+        <div id="stimulus"></div>
+        <div id="results">
+            <p id="time"></p>
+            <p id="count"></p>
+            <p id="mean"></p>
+            <p id="sd"></p>
+            <p id="errorRate"></p>
+            <p id="correlation"></p>
+        </div>
+        <button class="back-btn" onclick="backToMenu('reaktion')">Zurück zum Menü</button>
+    </div>
+
+    <!-- ===================== -->
+    <!-- ENTSCHEIDUNGREAKTIONSZEIT -->
+    <!-- ===================== -->
+    <div class="test-section" id="entscheidung-section">
+        <h1>Entscheidungstest (Formtest)</h1>
+        <h2 id="instruction2">Auf dem Bildschirm erscheinen abwechselnd Quadrate und Dreiecke in verschiedenen Farben.<br>Drücke die Leertaste <b>nur</b>, wenn ein Quadrat erscheint – nicht bei einem Dreieck!<br>Mit der Taste 'a' kannst du den Test jederzeit abbrechen.</h2>
+        <h3 id="hint2">Drücke die Leertaste, um zu starten.</h3>
+        <div id="stimulus2"></div>
+        <div id="results2">
+            <p id="meanAll"></p>
+            <p id="sdAll"></p>
+            <p id="errorRate2"></p>
+            <p id="meanPurple"></p>
+            <p id="sdPurple"></p>
+            <p id="meanOrange"></p>
+            <p id="sdOrange"></p>
+        </div>
+        <button class="back-btn" onclick="backToMenu('entscheidung')">Zurück zum Menü</button>
+    </div>
+
+    <!-- ===================== -->
+    <!-- SPEISE-ENTSCHEIDUNGSTEST -->
+    <!-- ===================== -->
+    <div class="test-section" id="food-section">
+        <h1>Speise-Entscheidungstest</h1>
+        <h2 id="food-instruction">Dir werden Bilder von Gerichten gezeigt. <br> Entscheide so schnell wie möglich, aus welchem Land das Gericht stammt:<br><br>Mit der Taste 'a' kannst du den Test jederzeit abbrechen.</h2>
+        <h3 id="food-hint">Drücke die Leertaste, um zu starten.</h3>
+        <div id="food-stimulus" style="text-align:center; margin:30px 0;"></div>
+        <div id="food-results">
+            <p id="food-mean-de"></p>
+            <p id="food-sd-de"></p>
+            <p id="food-error-de"></p>
+            <p id="food-mean-cn"></p>
+            <p id="food-sd-cn"></p>
+            <p id="food-error-cn"></p>
+            <p id="food-mean-mx"></p>
+            <p id="food-sd-mx"></p>
+            <p id="food-error-mx"></p>
+        </div>
+        <button class="back-btn" onclick="backToMenu('food')">Zurück zum Menü</button>
+    </div>
+
+<!-- ===================== -->
+<!--      JAVASCRIPT      -->
+<!-- ===================== -->
+<script>
+// --- Fragebogen-Antworten speichern ---
+let fragebogenAntworten = {};
+
+// --- Fragebogen-Validierung und Weiterleitung ---
+document.getElementById('fragebogen-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const form = document.getElementById('fragebogen-form');
+    const errorDiv = document.getElementById('fragebogen-error');
+    const alter = form.querySelector('input[name="alle"]').value.trim();
+    const geschlecht = form.querySelector('input[name="geschlecht"]:checked');
+    const kueche = form.querySelector('input[name="Küche"]:checked');
+    const allergien = form.querySelector('input[name="Allergien"]:checked');
+    let allergieText = "";
+    if (allergien && allergien.value === "ja") {
+        allergieText = form.querySelector('input[name="Allergie"]').value.trim();
+    }
+    const sportarten = form.querySelector('input[name="sportarten"]').value.trim();
+    if (!(alter && geschlecht && kueche && allergien && (allergien.value !== "ja" || allergieText) && sportarten)) {
+        errorDiv.textContent = "Bitte beantworte alle Fragen zuerst.";
+        errorDiv.style.display = "block";
+        return;
+    }
+    errorDiv.style.display = "none";
+    // Antworten speichern
+    fragebogenAntworten = {
+        alter: alter,
+        geschlecht: geschlecht.value,
+        kueche: kueche.value,
+        allergien: allergien.value,
+        allergieText: allergieText,
+        sportarten: sportarten
+    };
+    // Formular leeren
+    form.reset();
+    // Fragebogen-Bereich ausblenden, Menü einblenden
+    document.getElementById('frage-section').classList.remove('active');
+    document.getElementById('menu').classList.add('active');
+    updateMenuProgress();
+});
+// --- Ende Fragebogen-Validierung ---
+
+// =====================
+// MENÜ-LOGIK
+// =====================
+
+/**
+ * Zeigt den gewünschten Test an und startet die zugehörigen Event-Listener.
+ * @param {string} which - Name des Tests ('reaktion', 'entscheidung', 'food')
+ */
+function showTest(which) {
+    document.getElementById('menu').classList.remove('active');
+    if (which === 'reaktion') {
+        document.getElementById('reaktion-section').classList.add('active');
+        startReaktionListeners();
+    } else if (which === 'entscheidung') {
+        document.getElementById('entscheidung-section').classList.add('active');
+        startEntscheidungListeners();
+    } else if (which === 'food') {
+        document.getElementById('food-section').classList.add('active');
+        startFoodListeners();
+        startFoodTest();
+    } else if (which === 'frage') {
+        document.getElementById('frage-section').classList.add('active');
+    }
+}
+
+/**
+ * Kehrt zum Hauptmenü zurück und stoppt ggf. laufende Tests.
+ * @param {string} which - Name des Tests
+ */
+function backToMenu(which) {
+    document.getElementById('menu').classList.add('active');
+    if (which === 'reaktion') {
+        document.getElementById('reaktion-section').classList.remove('active');
+        stopReaktionTest();
+    } else if (which === 'entscheidung') {
+        document.getElementById('entscheidung-section').classList.remove('active');
+        stopEntscheidungTest();
+    } else if (which === 'food') {
+        document.getElementById('food-section').classList.remove('active');
+        stopFoodTest();
+    } else if (which === 'frage') {
+        document.getElementById('frage-section').classList.remove('active');
+    }
+    updateMenuProgress();
+}
+
+// =====================
+// REAKTIONSTEST-LOGIK
+// =====================
+
+// Globale Variablen für den Reaktionstest
+let experimentActive = false;      // Gibt an, ob der Test läuft
+let stimulusIsVisible = false;     // Gibt an, ob das Reizobjekt sichtbar ist
+let stimulusTimestamp;             // Zeitpunkt, zu dem das Reizobjekt angezeigt wurde
+let testStimulusTimeout;           // Timeout für das Anzeigen des nächsten Reizes
+let times = [];                    // Array für Reaktionszeiten
+let distances = [];                // Array für Distanzen des Reizes zum Bildschirmzentrum
+let falsePresses = 0;              // Anzahl der Fehl-Tastendrücke
+let misses = 0;                    // Anzahl der verpassten Reize
+let currentDistance = 0;           // Aktuelle Distanz des Reizes zum Zentrum
+let trialCount = 0;                // Aktuelle Versuchszahl
+const maxTrials = 30;              // Maximale Anzahl an Versuchen
+let reaktionListenerActive = false;// Gibt an, ob der Event-Listener aktiv ist
+let isFading = false;             // Gibt an, ob das Rechteck gerade eingeblendet wird
+
+// Globale Variablen für die Speicherung der Endergebnisse
+let reaktionErgebnisse = null;
+let entscheidungErgebnisse = null;
+let speiseErgebnisse = null;
+
+// Hilfsfunktion zum Anzeigen des Download-Buttons, wenn alle Tests fertig sind
+function checkAndShowDownload() {
+    updateMenuProgress();
+}
+
+// Download-Funktion
+function downloadAllResults() {
+    const allResults = {
+        fragebogen: fragebogenAntworten,
+        reaktionstest: reaktionErgebnisse,
+        entscheidungstest: entscheidungErgebnisse,
+        speisentest: speiseErgebnisse
+    };
+    const blob = new Blob([JSON.stringify(allResults, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'meine_ergebnisse.json';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }, 100);
+}
+
+// DOM-Elemente für den Reaktionstest
+const stimulus = document.getElementById('stimulus');
+const instruction = document.getElementById('instruction');
+const timeEl = document.getElementById('time');
+const countEl = document.getElementById('count');
+const meanEl = document.getElementById('mean');
+const sdEl = document.getElementById('sd');
+const errorRateEl = document.getElementById('errorRate');
+const corrEl = document.getElementById('correlation');
+
+// Hilfsfunktionen für Statistik
+function getMean(data) {
+    return data.reduce((a, b) => a + b, 0) / data.length;
+}
+function getStandardDeviation(data) {
+    const mean = getMean(data);
+    const sqDiffs = data.map(v => (v - mean) ** 2);
+    return Math.sqrt(getMean(sqDiffs));
+}
+function getCorrelation(x, y) {
+    const meanX = getMean(x);
+    const meanY = getMean(y);
+    const num = x.reduce((sum, xi, i) => sum + (xi - meanX) * (y[i] - meanY), 0);
+    const den = Math.sqrt(
+        x.reduce((sum, xi) => sum + (xi - meanX) ** 2, 0) *
+        y.reduce((sum, yi) => sum + (yi - meanY) ** 2, 0)
+    );
+    return num / den;
+}
+
+/**
+ * Setzt die Ergebnisanzeige zurück.
+ */
+function clearResults() {
+    timeEl.textContent = '';
+    countEl.textContent = '';
+    meanEl.textContent = '';
+    sdEl.textContent = '';
+    errorRateEl.textContent = '';
+    corrEl.textContent = '';
+}
+
+/**
+ * Zeigt die Ergebnisse nach Testende an.
+ */
+function showResults() {
+    // Tatsächlich absolvierte Versuche (Reaktionen + verpasste Reize)
+    const completedTrials = times.length + misses;
+    if (completedTrials > 0) {
+        const mean = Math.round(getMean(times));
+        const sd = Math.round(getStandardDeviation(times));
+        // Fehlerrate nur auf Basis der absolvierten Versuche berechnen
+        const errRate = ((falsePresses + misses) / completedTrials * 100).toFixed(1);
+        const corr = getCorrelation(distances, times).toFixed(2);
+        countEl.textContent = `Absolvierte Versuche: ${completedTrials} von ${maxTrials}`;
+        meanEl.textContent = `Mittlere Reaktionszeit: ${mean} Millisekunden`;
+        sdEl.textContent = `Standardabweichung: ${sd} Millisekunden`;
+        errorRateEl.textContent = `Fehlerrate: ${errRate} %`;
+        corrEl.textContent = `Korrelationskoeffizient: ${corr}`;
+        reaktionErgebnisse = {
+            ablauf: {
+                absolvierteVersuche: times.length + misses,
+                maxVersuche: maxTrials,
+                fehlerrate: errRate,
+                korrelation: corr
+            },
+            reaktionszeiten: times.slice(),
+            distanzen: distances.slice(),
+            falsePresses,
+            misses
+        };
+        checkAndShowDownload();
+    }
+}
+
+/**
+ * Startet einen neuen Versuch (mit zufälligem Intervall).
+ */
+function startTestTrial() {
+    if (trialCount >= maxTrials) {
+        stopExperiment();
+        return;
+    }
+    stimulus.style.display = 'none';
+    stimulus.style.backgroundColor = 'white';
+    stimulus.style.transition = '';
+    stimulusIsVisible = false;
+    const wait = (Math.random() * 4 + 2) * 1000; // 2-6 Sekunden
+    testStimulusTimeout = setTimeout(showStimulus, wait);
+}
+
+/**
+ * Zeigt das Reizobjekt an zufälliger Position an.
+ */
+// Funktion, um das Rechteck langsam immer roter werden zu lassen.
+function showStimulus() {
+trialCount++;
+// Setze das Rechteck zu Beginn unsichtbar und transparent
+stimulus.style.backgroundColor = '#070707'; // Startfarbe = Hintergrundfarbe
+stimulus.style.opacity = 1; // Startet sichtbar, aber gleiche Farbe wie Hintergrund
+
+const size = 50;
+const x = Math.random() * (window.innerWidth - size);
+const y = Math.random() * (window.innerHeight - size);
+stimulus.style.left = `${x}px`;
+stimulus.style.top = `${y}px`;
+stimulus.style.display = 'block';
+
+// Berechne Distanz zum Bildschirmzentrum
+const cx = window.innerWidth / 2;
+const cy = window.innerHeight / 2;
+currentDistance = Math.hypot(x + size / 2 - cx, y + size / 2 - cy);
+
+// Starte die Animation für das Sichtbarwerden und Farbübergang
+let progress = 0; // Fortschritt der Animation
+const duration = Math.random() * 4000 + 2000; // 2-6 Sekunden für den Übergang
+let timestampSet = false;
+
+// Timer direkt beim Start der Animation setzen (wie im Beispiel)
+stimulusTimestamp = performance.now();
+isFading = true;
+
+function animateVisibility() {
+    progress += 10; // Erhöhe den Fortschritt
+    if (progress <= duration) {
+        // Farbverlauf von Hintergrundfarbe (#070707) zu Rot (rgb(255,0,0))
+        const t = progress / duration;
+        const r = Math.round(7   + (255 - 7)   * t); // 7 -> 255
+        const g = Math.round(7   + (0   - 7)   * t); // 7 -> 0
+        const b = Math.round(7   + (0   - 7)   * t); // 7 -> 0
+        stimulus.style.backgroundColor = `rgb(${r},${g},${b})`;
+        requestAnimationFrame(animateVisibility); // Weiter animieren
+    } else {
+        isFading = false;
+    }
+}
+
+// Starte die Animation
+requestAnimationFrame(animateVisibility);
+
+stimulusIsVisible = true;
+}
+
+/**
+ * Reaktion wird aufgezeichnet, Reaktionszeit berechnet und nächster Versuch gestartet.
+ */
+function recordReaction() {
+    const dt = performance.now() - stimulusTimestamp;
+    times.push(dt);
+    distances.push(currentDistance);
+    timeEl.textContent = `${dt} ms`;
+    if (trialCount < maxTrials) {
+        startTestTrial();
+    } else {
+        stopExperiment();
+    }
+}
+
+/**
+ * Startet das Experiment (setzt alles zurück).
+ */
+function startExperiment() {
+    clearTimeout(testStimulusTimeout);
+    clearResults();
+    trialCount = 0;
+    times = [];
+    distances = [];
+    falsePresses = 0;
+    misses = 0;
+    experimentActive = true;
+    instruction.innerHTML = "Sobald ein rotes Rechteck irgendwo auf dem Bildschirm erscheint, drücke so schnell wie möglich die Leertaste.<br>Drücke die Leertaste nur, wenn du das Rechteck wirklich siehst!<br>Mit der Taste 'a' kannst du den Test jederzeit abbrechen.";
+    document.getElementById('hint').style.display = 'none'; // Hint ausblenden
+    startTestTrial();
+}
+
+/**
+ * Beendet das Experiment und zeigt die Ergebnisse an.
+ * Optional: Zeige, ob der Test frühzeitig beendet wurde.
+ */
+function stopExperiment(early = false) {
+    clearTimeout(testStimulusTimeout);
+    if (stimulusIsVisible) misses++;
+    experimentActive = false;
+    if (early) {
+        instruction.textContent = 'Test wurde frühzeitig beendet.';
+    } else {
+        instruction.textContent = 'Test beendet. Drücke Leertaste, um neu zu starten. Bitte trage deine Ergebnisse ins Ilias Forum ein.';
+    }
+    stimulus.style.display = 'none';
+    showResults();
+    document.getElementById('hint').style.display = 'block'; // Hint wieder anzeigen
+}
+
+/**
+ * Tastatur-Handler für den Reaktionstest.
+ */
+function reaktionKeyHandler(e) {
+    if (!document.getElementById('reaktion-section').classList.contains('active')) return;
+    if (e.key === ' ') {
+        if (!experimentActive) {
+            startExperiment();
+        } else if (isFading) {
+            recordReaction();
+        } else {
+            falsePresses++;
+        }
+    } else if (e.key === 'a' || e.key === 'A') {
+        if (experimentActive) {
+            stopExperiment(true);
+        }
+    }
+}
+
+/**
+ * Startet die Event-Listener für den Reaktionstest.
+ */
+function startReaktionListeners() {
+    if (!reaktionListenerActive) {
+        window.addEventListener('keydown', reaktionKeyHandler);
+        reaktionListenerActive = true;
+    }
+}
+
+/**
+ * Stoppt den Reaktionstest und entfernt Event-Listener.
+ */
+function stopReaktionTest() {
+    window.removeEventListener('keydown', reaktionKeyHandler);
+    reaktionListenerActive = false;
+    clearTimeout(testStimulusTimeout);
+    experimentActive = false;
+    stimulus.style.display = 'none';
+    instruction.textContent = 'Drücke die Leertaste, um zu starten. Mit Taste "a" kann das Experiment beendet werden.';
+    clearResults();
+    trialCount = 0;
+    times = [];
+    distances = [];
+    falsePresses = 0;
+    misses = 0;
+    isFading = false;
+    document.getElementById('hint').style.display = 'block'; // Hint wieder anzeigen
+}
+
+// =====================
+// ENTSCHEIDUNGREAKTIONSZEIT-LOGIK
+// =====================
+
+// Globale Variablen für den Entscheidungstest
+let active2 = false;                // Gibt an, ob der Test läuft
+let visible2 = false;               // Gibt an, ob das Reizobjekt sichtbar ist
+let startTime2;                     // Zeitpunkt, zu dem das Reizobjekt angezeigt wurde
+let timeoutId2;                     // Timeout für das Anzeigen des nächsten Reizes
+let trial2 = 0;                     // Aktuelle Versuchszahl
+let data2 = [];                     // Array für Versuchsdaten
+let entscheidungListenerActive = false; // Gibt an, ob der Event-Listener aktiv ist
+const maxTrials2 = 30;              // Maximale Anzahl an Versuchen
+
+// DOM-Elemente für den Entscheidungstest
+const stimEl2 = document.getElementById('stimulus2');
+const instr2 = document.getElementById('instruction2');
+const rMeanAll = document.getElementById('meanAll');
+const rSdAll = document.getElementById('sdAll');
+const rError = document.getElementById('errorRate2');
+const rMeanPur = document.getElementById('meanPurple');
+const rSdPur = document.getElementById('sdPurple');
+const rMeanOra = document.getElementById('meanOrange');
+const rSdOra = document.getElementById('sdOrange');
+
+// Hilfsfunktionen für Statistik
+function rand(min, max) { return Math.random() * (max - min) + min; }
+function mean(arr) { return arr.reduce((a, b) => a + b, 0) / arr.length; }
+function sd(arr) { const m = mean(arr); return Math.sqrt(arr.reduce((s, x) => s + (x - m) ** 2, 0) / arr.length); }
+
+/**
+ * Startet den nächsten Versuch mit zufälligem Intervall.
+ */
+function nextStimulus2() {
+    if (trial2 >= maxTrials2) { endTest2(); return; }
+    visible2 = false;
+    stimEl2.style.display = 'none';
+    const lastType = data2[trial2 - 1]?.type;
+    let wait;
+    if (lastType === 'triangle') {
+        wait = rand(1000, 4000); // 1-4 Sekunden
+    } else {
+        wait = rand(2000, 6000); // 2-6 Sekunden oder erster Stimulus
+    }
+    timeoutId2 = setTimeout(showStimulus2, wait);
+}
+
+/**
+ * Zeigt das Reizobjekt (Quadrat oder Dreieck) an zufälliger Position und Farbe an.
+ */
+function showStimulus2() {
+    trial2++;
+    const size = rand(100, 300);
+    const x = rand(0, window.innerWidth - size);
+    const y = rand(0, window.innerHeight - size);
+    const type = Math.random() < 0.5 ? 'square' : 'triangle';
+    const color = Math.random() < 0.5 ? 'purple' : 'orange';
+    stimEl2.style.left = `${x}px`;
+    stimEl2.style.top = `${y}px`;
+    if (type === 'square') {
+        stimEl2.style.width = `${size}px`;
+        stimEl2.style.height = `${size}px`;
+        stimEl2.style.backgroundColor = color;
+        stimEl2.style.border = 'none';
+    } else {
+        stimEl2.style.width = '0';
+        stimEl2.style.height = '0';
+        stimEl2.style.backgroundColor = '';
+        stimEl2.style.borderLeft = `${size/2}px solid transparent`;
+        stimEl2.style.borderRight = `${size/2}px solid transparent`;
+        stimEl2.style.borderBottom = `${size}px solid ${color}`;
+    }
+    stimEl2.style.display = 'block';
+    visible2 = true;
+    startTime2 = Date.now();
+    data2.push({ type, color, reacted: false, rt: null });
+    if (type === 'triangle') {
+        clearTimeout(timeoutId2);
+        timeoutId2 = setTimeout(nextStimulus2, rand(1000, 4000));
+    }
+}
+
+/**
+ * Beendet den Test und zeigt die Ergebnisse an.
+ */
+function endTest2(early = false) {
+    active2 = false;
+    visible2 = false;
+    clearTimeout(timeoutId2);
+    if (early) {
+        instr2.textContent = 'Test wurde frühzeitig beendet.';
+    } else {
+        instr2.textContent = 'Test beendet. Drücke Leertaste zum Neustart.';
+    }
+    stimEl2.style.display = 'none';
+    // Statistiken berechnen
+    const squares = data2.filter(d => d.type === 'square');
+    const rts = squares.filter(d => d.rt !== null).map(d => d.rt);
+    const errCount = data2.filter(d => d.type === 'triangle' && d.reacted).length;
+    const meanAll = rts.length ? `${Math.round(mean(rts))} ms` : '-';
+    const sdAll = rts.length ? `${Math.round(sd(rts))} ms` : '-';
+    const errRate = `${(errCount / maxTrials2 * 100).toFixed(1)} %`;
+    const purple = squares.filter(d => d.color === 'purple');
+    const orange = squares.filter(d => d.color === 'orange');
+    const rtsP = purple.filter(d => d.rt !== null).map(d => d.rt);
+    const rtsO = orange.filter(d => d.rt !== null).map(d => d.rt);
+    const meanP = rtsP.length ? `${Math.round(mean(rtsP))} ms` : '-';
+    const sdP = rtsP.length ? `${Math.round(sd(rtsP))} ms` : '-';
+    const meanO = rtsO.length ? `${Math.round(mean(rtsO))} ms` : '-';
+    const sdO = rtsO.length ? `${Math.round(sd(rtsO))} ms` : '-';
+    rMeanAll.textContent = 'Mittlere Reaktionszeit (alle Quadrate): ' + meanAll;
+    rSdAll.textContent = 'Standardabweichung (alle Quadrate): ' + sdAll;
+    rError.textContent = 'Fehlerrate (Dreiecke gedrückt): ' + errRate;
+    rMeanPur.textContent = 'Mittlere Reaktionszeit (lila Quadrate): ' + meanP;
+    rSdPur.textContent = 'Standardabweichung (lila Quadrate): ' + sdP;
+    rMeanOra.textContent = 'Mittlere Reaktionszeit (orange Quadrate): ' + meanO;
+    rSdOra.textContent = 'Standardabweichung (orange Quadrate): ' + sdO;
+    entscheidungErgebnisse = {
+        daten: data2.slice(),
+        abgebrochen: early
+    };
+    checkAndShowDownload();
+    document.getElementById('hint2').style.display = 'block'; // Hint wieder anzeigen
+}
+
+/**
+ * Tastatur-Handler für den Entscheidungstest.
+ */
+function entscheidungKeyHandler(e) {
+    if (!document.getElementById('entscheidung-section').classList.contains('active')) return;
+    if (e.key === ' ') {
+        if (!active2) {
+            // Test starten
+            active2 = true;
+            instr2.innerHTML = "Auf dem Bildschirm erscheinen abwechselnd Quadrate und Dreiecke in verschiedenen Farben.<br>Drücke die Leertaste <b>nur</b>, wenn ein Quadrat erscheint – nicht bei einem Dreieck!<br>Mit der Taste 'a' kannst du den Test jederzeit abbrechen.";
+            document.getElementById('hint2').style.display = 'none'; // Hint ausblenden
+            trial2 = 0;
+            data2 = [];
+            rMeanAll.textContent = '';
+            rSdAll.textContent = '';
+            rError.textContent = '';
+            rMeanPur.textContent = '';
+            rSdPur.textContent = '';
+            rMeanOra.textContent = '';
+            rSdOra.textContent = '';
+            nextStimulus2();
+            return;
+        }
+        if (visible2) {
+            const entry = data2[trial2 - 1];
+            entry.reacted = true;
+            if (entry.type === 'square') {
+                entry.rt = Date.now() - startTime2;
+            } else {
+                clearTimeout(timeoutId2);
+            }
+            nextStimulus2();
+        }
+    } else if (e.key === 'a' || e.key === 'A') {
+        if (active2) {
+            endTest2(true);
+        }
+    }
+}
+
+/**
+ * Startet die Event-Listener für den Entscheidungstest.
+ */
+function startEntscheidungListeners() {
+    if (!entscheidungListenerActive) {
+        window.addEventListener('keydown', entscheidungKeyHandler);
+        entscheidungListenerActive = true;
+    }
+}
+
+/**
+ * Stoppt den Entscheidungstest und entfernt Event-Listener.
+ */
+function stopEntscheidungTest() {
+    window.removeEventListener('keydown', entscheidungKeyHandler);
+    entscheidungListenerActive = false;
+    clearTimeout(timeoutId2);
+    active2 = false;
+    visible2 = false;
+    stimEl2.style.display = 'none';
+    instr2.textContent = 'Drücke Leertaste, um zu starten!';
+    rMeanAll.textContent = '';
+    rSdAll.textContent = '';
+    rError.textContent = '';
+    rMeanPur.textContent = '';
+    rSdPur.textContent = '';
+    rMeanOra.textContent = '';
+    rSdOra.textContent = '';
+    trial2 = 0;
+    data2 = [];
+    document.getElementById('hint2').style.display = 'block'; // Hint wieder anzeigen
+}
+
+// =====================
+// SPEISE-ENTSCHEIDUNGSTEST-LOGIK
+// =====================
+
+// Array mit Bildpfaden und zugehörigen Ländern
+const foodImages = [
+    // 10 Deutschland
+    {src:'Speisen/de1.jpg', country:'de'},
+    {src:'Speisen/de2.jpg', country:'de'},
+    {src:'Speisen/de3.jpg', country:'de'},
+    {src:'Speisen/de4.jpg', country:'de'},
+    {src:'Speisen/de5.jpg', country:'de'},
+    {src:'Speisen/de6.jpg', country:'de'},
+    {src:'Speisen/de7.jpg', country:'de'},
+    {src:'Speisen/de8.jpg', country:'de'},
+    {src:'Speisen/de9.jpg', country:'de'},
+    {src:'Speisen/de10.jpg', country:'de'},
+    // 10 China
+    {src:'Speisen/cf1.jpg', country:'cn'},
+    {src:'Speisen/cf2.jpg', country:'cn'},
+    {src:'Speisen/cf3.jpg', country:'cn'},
+    {src:'Speisen/cf4.jpg', country:'cn'},
+    {src:'Speisen/cf5.jpg', country:'cn'},
+    {src:'Speisen/cf6.jpg', country:'cn'},
+    {src:'Speisen/cf7.jpg', country:'cn'},
+    {src:'Speisen/cf8.jpg', country:'cn'},
+    {src:'Speisen/cf9.jpg', country:'cn'},
+    {src:'Speisen/cf10.jpg', country:'cn'},
+    // 10 Mexiko
+    {src:'Speisen/m1.jpg', country:'mx'},
+    {src:'Speisen/m2.jpg', country:'mx'},
+    {src:'Speisen/m3.jpg', country:'mx'},
+    {src:'Speisen/m4.jpg', country:'mx'},
+    {src:'Speisen/m5.jpg', country:'mx'},
+    {src:'Speisen/m6.jpg', country:'mx'},
+    {src:'Speisen/m7.jpg', country:'mx'},
+    {src:'Speisen/m8.jpg', country:'mx'},
+    {src:'Speisen/m9.jpg', country:'mx'},
+    {src:'Speisen/m10.jpg', country:'mx'}
+];
+let foodTrials = [];         // Array für die zufällig sortierten Versuche
+let foodTrialIndex = 0;      // Aktueller Index im foodTrials-Array
+let foodActive = false;      // Gibt an, ob der Test läuft
+let foodStartTime = 0;       // Zeitpunkt, zu dem das Bild angezeigt wurde
+let foodData = [];           // Array für Versuchsdaten
+let foodListenerActive = false; // Gibt an, ob der Event-Listener aktiv ist
+
+/**
+ * Mischt ein Array zufällig (Fisher-Yates-Algorithmus).
+ */
+function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+}
+
+/**
+ * Zeigt das nächste Bild an.
+ */
+function showFoodStimulus() {
+    document.getElementById('food-results').style.display = 'none';
+    if (foodTrialIndex >= foodTrials.length) {
+        endFoodTest();
+        return;
+    }
+    // Hinweis immer einblenden, solange Test läuft
+    document.getElementById('food-hint').style.display = 'block';
+    const stim = foodTrials[foodTrialIndex];
+    const img = `<img src="${stim.src}" alt="Speise" style="max-width:400px;max-height:300px;border-radius:12px;box-shadow:0 2px 8px #aaa;">`;
+    document.getElementById('food-stimulus').innerHTML = img;
+    foodStartTime = Date.now();
+    foodActive = true;
+}
+
+// Timeout-Variable für Food-Test
+let foodTimeout = null;
+
+/**
+ * Tastatur-Handler für den Speise-Entscheidungstest.
+ */
+function foodKeyHandler(e) {
+    if (!document.getElementById('food-section').classList.contains('active')) return;
+    if (!foodActive && e.key === ' ') {
+        document.getElementById('food-instruction').style.display = 'none';
+        // Jetzt: Tastenbelegung als Hint anzeigen
+        document.getElementById('food-hint').textContent = "Drücke D für Deutschland, F für China, G für Mexiko.";
+        foodActive = true;
+        showFoodStimulus();
+        return;
+    }
+    if (!foodActive) return;
+    if (e.key === 'a' || e.key === 'A') {
+        endFoodTest(true);
+        return;
+    }
+    const stim = foodTrials[foodTrialIndex];
+    let correctKey = '';
+    if (stim.country === 'de') correctKey = 'd';
+    if (stim.country === 'cn') correctKey = 'f';
+    if (stim.country === 'mx') correctKey = 'g';
+    if (e.key.toLowerCase() === correctKey) {
+        // Richtige Taste gedrückt
+        const rt = Date.now() - foodStartTime;
+        foodData.push({country: stim.country, rt, error: false});
+        foodTrialIndex++;
+        // Bild ausblenden und nach 2-6 Sekunden das nächste zeigen
+        document.getElementById('food-stimulus').innerHTML = '';
+        foodActive = false;
+        if (foodTimeout) clearTimeout(foodTimeout);
+        foodTimeout = setTimeout(() => {
+            showFoodStimulus();
+        }, Math.random() * 4000 + 2000);
+    } else if (['d','f','g'].includes(e.key.toLowerCase())) {
+        // Falsche Taste gedrückt
+        const rt = Date.now() - foodStartTime;
+        foodData.push({country: stim.country, rt, error: true});
+        foodTrialIndex++;
+        // Bild ausblenden und nach 2-6 Sekunden das nächste zeigen
+        document.getElementById('food-stimulus').innerHTML = '';
+        foodActive = false;
+        if (foodTimeout) clearTimeout(foodTimeout);
+        foodTimeout = setTimeout(() => {
+            showFoodStimulus();
+        }, Math.random() * 4000 + 2000);
+    }
+}
+
+/**
+ * Startet den Speise-Entscheidungstest (setzt alles zurück und mischt die Bilder).
+ */
+function startFoodTest() {
+    // Vor dem Start: Nur Start-Hint anzeigen
+    document.getElementById('food-hint').textContent = 'Drücke die Leertaste, um zu starten.';
+    document.getElementById('food-hint').style.display = 'block';
+    const foodInstr = document.getElementById('food-instruction');
+    foodInstr.style.display = 'block';
+    foodInstr.innerHTML = "Dir werden Bilder von Gerichten gezeigt. Entscheide so schnell wie möglich, aus welchem Land das Gericht stammt:<br>Mit der Taste 'a' kannst du den Test jederzeit abbrechen.";
+    // Ergebnisse zurücksetzen
+    const results = document.getElementById('food-results');
+    results.style.display = 'none';
+    results.querySelectorAll('p').forEach(p => p.textContent = '');
+    foodTrials = [...foodImages];
+    shuffle(foodTrials);
+    foodTrialIndex = 0;
+    foodData = [];
+    document.getElementById('food-results').style.display = 'none';
+    document.getElementById('food-stimulus').innerHTML = '';
+    document.getElementById('food-instruction').style.display = '';
+    foodActive = false;
+}
+
+/**
+ * Beendet den Test und zeigt die Ergebnisse an.
+ */
+function endFoodTest(early = false) {
+    // Ergebnisse zurücksetzen 
+    const results = document.getElementById('food-results');
+    results.style.display = 'none';
+    results.querySelectorAll('p').forEach(p => p.textContent = '');
+
+    foodActive = false;
+    document.getElementById('food-stimulus').innerHTML = '';
+    document.getElementById('food-results').style.display = 'block';
+    const countries = ['de','cn','mx'];
+    const means = {}, sds = {}, errors = {};
+    for (const c of countries) {
+        const arr = foodData.filter(d => d.country === c);
+        const rts = arr.filter(d => !d.error).map(d => d.rt);
+        means[c] = rts.length ? Math.round(rts.reduce((a,b)=>a+b,0)/rts.length) : '-';
+        sds[c] = rts.length ? Math.round(Math.sqrt(rts.reduce((s,x)=>s+(x-means[c])**2,0)/rts.length)) : '-';
+        errors[c] = arr.length ? (arr.filter(d=>d.error).length/arr.length*100).toFixed(1) : '-';
+    }
+    document.getElementById('food-mean-de').textContent = `Mittlere Entscheidungszeit (Deutschland): ${means.de} ms`;
+    document.getElementById('food-sd-de').textContent = `Standardabweichung (Deutschland): ${sds.de} ms`;
+    document.getElementById('food-error-de').textContent = `Fehlerrate (Deutschland): ${errors.de} %`;
+    document.getElementById('food-mean-cn').textContent = `Mittlere Entscheidungszeit (China): ${means.cn} ms`;
+    document.getElementById('food-sd-cn').textContent = `Standardabweichung (China): ${sds.cn} ms`;
+    document.getElementById('food-error-cn').textContent = `Fehlerrate (China): ${errors.cn} %`;
+    document.getElementById('food-mean-mx').textContent = `Mittlere Entscheidungszeit (Mexiko): ${means.mx} ms`;
+    document.getElementById('food-sd-mx').textContent = `Standardabweichung (Mexiko): ${sds.mx} ms`;
+    document.getElementById('food-error-mx').textContent = `Fehlerrate (Mexiko): ${errors.mx} %`;
+
+    // Fragebogen-Antworten unter den Ergebnissen anzeigen
+    let fragebogenHtml = '<hr><h3>Deine Angaben aus dem Fragebogen:</h3><ul>';
+    fragebogenHtml += '<li>Alter: ' + (fragebogenAntworten.alter || '-') + '</li>';
+    fragebogenHtml += '<li>Geschlecht: ' + (fragebogenAntworten.geschlecht || '-') + '</li>';
+    fragebogenHtml += '<li>Isst oft internationale Küche: ' + (fragebogenAntworten.kueche || '-') + '</li>';
+    fragebogenHtml += '<li>Allergien: ' + (fragebogenAntworten.allergien === 'ja' ? 'Ja, ' + (fragebogenAntworten.allergieText || '-') : 'Nein') + '</li>';
+    fragebogenHtml += '<li>Sportarten: ' + (fragebogenAntworten.sportarten || '-') + '</li>';
+    fragebogenHtml += '</ul>';
+    results.innerHTML += fragebogenHtml;
+
+    // Nach Testende: Nur Start-Hint anzeigen
+    document.getElementById('food-hint').textContent = 'Drücke die Leertaste, um zu starten.';
+    document.getElementById('food-hint').style.display = 'block';
+    const foodInstr = document.getElementById('food-instruction');
+    foodInstr.style.display = 'block';
+    if (early) {
+        foodInstr.textContent = 'Test wurde frühzeitig beendet.';
+    } else {
+        foodInstr.textContent =
+          'Test beendet. Bitte trage deine Ergebnisse ins Ilias Forum ein';
+    }
+    speiseErgebnisse = {
+        daten: foodData.slice(),
+        abgebrochen: early
+    };
+    checkAndShowDownload();
+    document.getElementById('hint').style.display = 'block'; // Hint wieder anzeigen
+}
+
+/**
+ * Startet die Event-Listener für den Speise-Entscheidungstest.
+ */
+function startFoodListeners() {
+    if (!foodListenerActive) {
+        window.addEventListener('keydown', foodKeyHandler);
+        foodListenerActive = true;
+    }
+}
+
+/**
+ * Stoppt den Speise-Entscheidungstest und entfernt Event-Listener.
+ */
+function stopFoodTest() {
+    window.removeEventListener('keydown', foodKeyHandler);
+    foodListenerActive = false;
+    foodActive = false;
+    document.getElementById('food-stimulus').innerHTML = '';
+    document.getElementById('food-results').style.display = 'none';
+    document.getElementById('food-instruction').style.display = '';
+    // Nach Abbruch: Nur Start-Hint anzeigen
+    document.getElementById('food-hint').textContent = 'Drücke die Leertaste, um zu starten.';
+    document.getElementById('food-hint').style.display = 'block';
+    if (foodTimeout) clearTimeout(foodTimeout);
+}
+
+// Fortschrittsbalken und Menü-Status aktualisieren
+function updateMenuProgress() {
+    let done = 0;
+    if (reaktionErgebnisse) done++;
+    if (entscheidungErgebnisse) done++;
+    if (speiseErgebnisse) done++;
+    // Progress Bar
+    const bar = document.getElementById('progress-bar');
+    const label = document.getElementById('progress-label');
+    bar.style.width = (done / 3 * 100) + '%';
+    label.textContent = `${done}/3 Tests abgeschlossen`;
+    // Nachricht/Download
+    const msg = document.getElementById('menu-message');
+    let dlBtn = document.getElementById('download-all-btn');
+    if (done === 3) {
+        msg.textContent = 'Alle Tests abgeschlossen! Du kannst jetzt deine Ergebnisse herunterladen.';
+        msg.style.display = 'block';
+        if (!dlBtn) {
+            dlBtn = document.createElement('button');
+            dlBtn.id = 'download-all-btn';
+            dlBtn.textContent = 'Alle Ergebnisse herunterladen';
+            dlBtn.className = 'back-btn';
+            dlBtn.style.position = 'static';
+            dlBtn.style.margin = '20px auto 0 auto';
+            dlBtn.onclick = downloadAllResults;
+            msg.appendChild(document.createElement('br'));
+            msg.appendChild(dlBtn);
+        } else {
+            dlBtn.style.display = 'inline-block';
+            if (!msg.contains(dlBtn)) msg.appendChild(dlBtn);
+        }
+    } else {
+        msg.textContent = '';
+        msg.style.display = 'none';
+        if (dlBtn) dlBtn.style.display = 'none';
+    }
+}
+</script>
+</body>
+</html>
